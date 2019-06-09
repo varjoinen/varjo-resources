@@ -1,0 +1,37 @@
+{
+  "name": "varjo-resources",
+  "version": "0.0.1",
+  "description": "Resource planning API for project work",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/varjoinen/varjo-resources.git"
+  },
+  "main": "src/index.js",
+  "scripts": {
+    "start-dev": "nodemon ./src/index.js",
+    "start": "node src/index.js",
+    "build": "docker build -t varjo-resources .",
+    "test": "echo 'No tests yet!'",
+    "coverage": "nyc npm run test",
+    "lint": "eslint 'src/**.js'"
+  },
+  "keywords": [
+    "resources-planning",
+    "planning",
+    "project-work"
+  ],
+  "author": "Antti Varjoinen",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1",
+    "express-pino-logger": "^4.0.0",
+    "is-port-reachable": "^2.0.1",
+    "mongoose": "^5.5.13",
+    "pino": "^5.12.6"
+  },
+  "devDependencies": {
+    "eslint": "^5.16.0",
+    "nodemon": "^1.19.1",
+    "nyc": "^14.1.1"
+  }
+}
