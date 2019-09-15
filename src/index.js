@@ -1,27 +1,33 @@
 (async () => {
     const { config } = require("./config");
-    const { waitForHost } = require("./utils");
 
-    const pino = require("pino");
+    const { logger, ResourceNotFoundError } = require("./utils");
 
-    const mongoose = require("mongoose");
+    const dbUtils = require("./db");
 
+    const { addAsync } = require("@awaitjs/express");
     const express = require("express");
     const expressPino = require("express-pino-logger");
+    const responseTime = require("response-time");
 
-    const logger = pino({ level: config.server.logLevel });
-
-    try {
-
-        // --- Database
-        logger.info(`Connecting to database: ${config.mongodb.url}`);
-        await waitForHost(config.mongodb.hostname, config.mongodb.port, 10);
-        await mongoose.connect(config.mongodb.url, config.mongodb.connectionOptions);
-
+    try {    
         // --- REST API
         const expressLogger = expressPino({ logger });
-        const app = express();
+        const app = addAsync(express());
         app.use(expressLogger);
+        app.use(express.json());
+
+        // --- Profiling
+        app.use(responseTime());
+
+        // --- Database
+        const db = await dbUtils.connect(config.mongodb, logger);
+        const dbMiddleware = function (req, _, next) {
+            req.varjoResources = req.varjoResources || {};
+            req.varjoResources.db = db;
+            next();
+        };
+        app.use(dbMiddleware);
 
         // --- Routes
         const { router: projectRoutes } = require("./routes/project");
@@ -33,10 +39,20 @@
         const { router: userRoutes } = require("./routes/user");
         app.use("/users", userRoutes);
 
-        // --- Start server
-        app.listen(config.server.port , () => {
-            logger.info(`Server listening on port ${config.server.port}`);
+        // --- Error handling
+        app.useAsync(async (err, _, res, next) => {
+            logger.fatal(err);
+
+            if (err instanceof ResourceNotFoundError) {
+                res.status(404);
+            }
+
+            res.json({"error": err.message});
         });
+
+        // --- Start server
+        await app.listen(3000);
+        logger.info(`Server listening on port ${config.server.port}`);
     } catch (err) {
         logger.fatal(err);
         process.exit(1);

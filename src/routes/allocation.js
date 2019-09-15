@@ -1,5 +1,9 @@
+const { addAsync } = require("@awaitjs/express");
 const express = require("express");
-const router = express.Router();
+const router = addAsync(express.Router());
+
+const { newAllocation, existingAllocation } = require("../validation/allocation");
+const { getAllocations, getAllocation, createAllocation, updateAllocation, deleteAllocation } = require("../services/allocation");
 
 /*
  * Sample response:
@@ -8,7 +12,7 @@ const router = express.Router();
  *    {
  *      "id": "string",
  *      "allocation": "number",
- *      "projectId": "string",
+ *      "allocationId": "string",
  *      "userId": "string",
  *      "start": "date",
  *      "end": "date",
@@ -24,8 +28,8 @@ const router = express.Router();
  * 
  * Returns 200, with content.
  */
-router.get("/", (req, res) => {
-    return res.json({"message": "List allocations"});
+router.getAsync("/", async (req, res) => {
+    return res.json(await getAllocations(req.varjoResources.db));
 });
 
 /*
@@ -33,7 +37,7 @@ router.get("/", (req, res) => {
  *
  * {
  *   "allocation": "number",
- *   "projectId": "string",
+ *   "allocationId": "string",
  *   "userId": "string",
  *   "start": "date",
  *   "end": "date",
@@ -48,9 +52,27 @@ router.get("/", (req, res) => {
  *  Sample response:
  * 
  * {
+ *   "id": "string"
+ * 
+ * Returns 200, with content.
+ */
+router.postAsync("/", async (req, res) => {
+    const { error } = await newAllocation.validate(req.body);
+
+    if (error) {
+        throw error;
+    }
+
+    return res.json(await createAllocation(req.body, req.varjoResources.db));
+});
+
+/*
+ *  Sample response:
+ * 
+ * {
  *   "id": "string",
  *   "allocation": "number",
- *   "projectId": "string",
+ *   "allocationId": "string",
  *   "userId": "string",
  *   "start": "date",
  *   "end": "date",
@@ -64,32 +86,8 @@ router.get("/", (req, res) => {
  * 
  * Returns 200, with content.
  */
-router.post("/", (req, res) => {
-    return res.json({"message": "Create allocation"});
-});
-
-/*
- *  Sample response:
- * 
- * {
- *   "id": "string",
- *   "allocation": "number",
- *   "projectId": "string",
- *   "userId": "string",
- *   "start": "date",
- *   "end": "date",
- *   "tags": [
- *     {
- *       "key": "string",
- *       "value": "string"
- *     }
- *   ]
- * }
- * 
- * Returns 200, with content.
- */
-router.get("/:id", (req, res) => {
-    return res.json({"message": `Get allocation ${req.params.id}`});
+router.getAsync("/:id", async (req, res) => {
+    return res.json(await getAllocation(req.params.id, req.varjoResources.db));
 });
 
 /*
@@ -98,7 +96,7 @@ router.get("/:id", (req, res) => {
  * {
  *   "id": "string",
  *   "allocation": "number",
- *   "projectId": "string",
+ *   "allocationId": "string",
  *   "userId": "string",
  *   "start": "date",
  *   "end": "date",
@@ -115,7 +113,7 @@ router.get("/:id", (req, res) => {
  * {
  *   "id": "string",
  *   "allocation": "number",
- *   "projectId": "string",
+ *   "allocationId": "string",
  *   "userId": "string",
  *   "start": "date",
  *   "end": "date",
@@ -127,24 +125,27 @@ router.get("/:id", (req, res) => {
  *   ]
  * }
  * 
- * Notes:
- * 
- * Id is a required field, other are optional.
- * 
- * Existing fields will be updated, new tags are appended to the list of
- * tags, tags cannot be removed.
  * 
  * Returns 204, no content.
  */
-router.put("/:id", (req, res) => {
-    return res.json({"message": `Update allocation ${req.params.id}`});
+// TODO
+router.putAsync("/:id", async (req, res) => {
+    const { error } = await existingAllocation.validate(req.body);
+
+    if (error || (reg.params.id != req.body.id)) {
+        // TODO error?
+        throw error;
+    }
+
+    return res.status(204).json(await updateAllocation(req.body, true, req.varjoResources.db));
 });
 
 /*
  * Returns 204, no content.
  */
-router.delete("/:id", (req, res) => {
-    return res.json({"message": `Delete allocation ${req.params.id}`});
+router.deleteAsync("/:id", async (req, res) => {
+    await deleteAllocation(req.params.id, req.varjoResources.db);
+    res.status(204).send();
 });
 
-exports.router = router;
+module.exports = { router };

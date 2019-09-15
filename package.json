@@ -2,6 +2,8 @@
   "name": "varjo-resources",
   "version": "0.0.1",
   "description": "Resource planning API for project work",
+  "author": "Antti Varjoinen",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/varjoinen/varjo-resources.git"
@@ -9,6 +11,7 @@
   "main": "src/index.js",
   "scripts": {
     "start-dev": "nodemon ./src/index.js",
+    "containers-start": "npm run build && docker-compose down && docker-compose up",
     "start": "node src/index.js",
     "build": "docker build -t varjo-resources .",
     "test": "echo 'No tests yet!'",
@@ -20,14 +23,16 @@
     "planning",
     "project-work"
   ],
-  "author": "Antti Varjoinen",
-  "license": "MIT",
   "dependencies": {
+    "@awaitjs/express": "^0.3.0",
+    "@hapi/joi": "^16.0.1",
+    "@hapi/joi-date": "^2.0.0",
     "express": "^4.17.1",
     "express-pino-logger": "^4.0.0",
     "is-port-reachable": "^2.0.1",
-    "mongoose": "^5.5.13",
-    "pino": "^5.12.6"
+    "mongodb": "^3.3.2",
+    "pino": "^5.12.6",
+    "response-time": "^2.3.2"
   },
   "devDependencies": {
     "eslint": "^5.16.0",

@@ -1,5 +1,9 @@
+const { addAsync } = require("@awaitjs/express");
 const express = require("express");
-const router = express.Router();
+const router = addAsync(express.Router());
+
+const { newProject, existingProject } = require("../validation/project");
+const { getProjects, getProject, createProject, updateProject, deleteProject } = require("../services/project");
 
 /*
  * Sample response:
@@ -23,8 +27,8 @@ const router = express.Router();
  * 
  * Returns 200, with content.
  */
-router.get("/", (req, res) => {
-    return res.json({"message": "List projects"});
+router.getAsync("/", async (req, res) => {
+    return res.json(await getProjects(req.varjoResources.db));
 });
 
 /*
@@ -46,23 +50,19 @@ router.get("/", (req, res) => {
  *  Sample response:
  * 
  * {
- *   "id": "string",
- *   "name": "string",
- *   "description": "string",
- *   "start": "date",
- *   "end": "date",
- *   "tags": [
- *     {
- *       "key": "string",
- *       "value": "string"
- *     }
- *   ]
+ *   "id": "string"
  * }
  * 
  * Returns 200, with content.
  */
-router.post("/", (req, res) => {
-    return res.json({"message": "Create project"});
+router.postAsync("/", async (req, res) => {
+    const { error } = await newProject.validate(req.body);
+
+    if (error) {
+        throw error;
+    }
+
+    return res.json(await createProject(req.body, req.varjoResources.db));
 });
 
 /*
@@ -84,8 +84,8 @@ router.post("/", (req, res) => {
  * 
  * Returns 200, with content
  */
-router.get("/:id", (req, res) => {
-    return res.json({"message": `Get project ${req.params.id}`});
+router.getAsync("/:id", async (req, res) => {
+    return res.json(await getProject(req.params.id, req.varjoResources.db));
 });
 
 /*
@@ -121,24 +121,26 @@ router.get("/:id", (req, res) => {
  *   ]
  * }
  * 
- * Notes:
- * 
- * Id is a required field, other are optional.
- * 
- * Existing fields will be updated, new tags are appended to the list of
- * tags, tags cannot be removed.
- * 
  * Returns 204, no content.
  */
-router.put("/:id", (req, res) => {
-    return res.json({"message": `Update project ${req.params.id}`});
+// TODO
+router.putAsync("/:id", async (req, res) => {
+    const { error } = await existingProject.validate(req.body);
+
+    if (error || (reg.params.id != req.body.id)) {
+        // TODO error?
+        throw error;
+    }
+
+    return res.status(204).json(await updateProject(req.body, true, req.varjoResources.db));
 });
 
 /*
  * Returns 204, no content.
  */
-router.delete("/:id", (req, res) => {
-    return res.json({"message": `Delete project ${req.params.id}`});
+router.deleteAsync("/:id", async (req, res) => {
+    await deleteProject(req.params.id, req.varjoResources.db);
+    res.status(204).send();
 });
 
-exports.router = router;
+module.exports = { router };

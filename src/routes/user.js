@@ -1,5 +1,9 @@
+const { addAsync } = require("@awaitjs/express");
 const express = require("express");
-const router = express.Router();
+const router = addAsync(express.Router());
+
+const { newUser, existingUser } = require("../validation/user");
+const { getUsers, getUser, createUser, updateUser, deleteUser } = require("../services/user");
 
 /*
  * Sample response:
@@ -20,8 +24,8 @@ const router = express.Router();
  * 
  * Returns 200, with content.
  */
-router.get("/", (req, res) => {
-    return res.json({"message": "List users"});
+router.getAsync("/", async (req, res) => {
+    return res.json(await getUsers(req.varjoResources.db));
 });
 
 /*
@@ -40,20 +44,19 @@ router.get("/", (req, res) => {
  *  Sample response:
  * 
  * {
- *   "id": "string",
- *   "name": "string",
- *   "tags": [
- *     {
- *       "key": "string",
- *       "value": "string"
- *     }
- *   ]
+ *   "id": "string"
  * }
  * 
  * Returns 200, with content.
  */
-router.post("/", (req, res) => {
-    return res.json({"message": "Create user"});
+router.postAsync("/", async (req, res) => {
+    const { error } = await newUser.validate(req.body);
+
+    if (error) {
+        throw error;
+    }
+
+    return res.json(await createUser(req.body, req.varjoResources.db));
 });
 
 /*
@@ -72,8 +75,8 @@ router.post("/", (req, res) => {
  * 
  * Returns 200, with content.
  */
-router.get("/:id", (req, res) => {
-    return res.json({"message": `Get user ${req.params.id}`});
+router.getAsync("/:id", async (req, res) => {
+    return res.json(await getUser(req.params.id, req.varjoResources.db));
 });
 
 /*
@@ -103,24 +106,26 @@ router.get("/:id", (req, res) => {
  *   ]
  * }
  * 
- * Notes:
- * 
- * Id is a required field, other are optional.
- * 
- * Existing fields will be updated, new tags are appended to the list of
- * tags, tags cannot be removed.
- * 
  * Returns 204, no content.
  */
-router.put("/:id", (req, res) => {
-    return res.json({"message": `Update user ${req.params.id}`});
+// TODO
+router.putAsync("/:id", async (req, res) => {
+    const { error } = await existingUser.validate(req.body);
+
+    if (error || (reg.params.id != req.body.id)) {
+        // TODO error?
+        throw error;
+    }
+
+    return res.status(204).json(await updateUser(req.body, true, req.varjoResources.db));
 });
 
 /*
  * Returns 204, no content.
  */
-router.delete("/:id", (req, res) => {
-    return res.json({"message": `Delete user ${req.params.id}`});
+router.deleteAsync("/:id", async (req, res) => {
+    await deleteUser(req.params.id, req.varjoResources.db);
+    res.status(204).send();
 });
 
-exports.router = router;
+module.exports = { router };
