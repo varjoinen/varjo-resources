@@ -45,6 +45,8 @@
 
             if (err instanceof ResourceNotFoundError) {
                 res.status(404);
+            } else {
+                res.status(500);
             }
 
             res.json({"error": err.message});

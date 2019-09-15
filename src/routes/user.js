@@ -3,7 +3,12 @@ const express = require("express");
 const router = addAsync(express.Router());
 
 const { newUser, existingUser } = require("../validation/user");
-const { getUsers, getUser, createUser, updateUser, deleteUser } = require("../services/user");
+const { getUsers,
+        getUser,
+        createUser,
+        updateUser,
+        deleteUser,
+        getUserAllocations } = require("../services/user");
 
 /*
  * Sample response:
@@ -126,6 +131,11 @@ router.putAsync("/:id", async (req, res) => {
 router.deleteAsync("/:id", async (req, res) => {
     await deleteUser(req.params.id, req.varjoResources.db);
     res.status(204).send();
+});
+
+// TODO description
+router.getAsync("/:id/allocations", async (req, res) => {
+    return res.json(await getUserAllocations(req.params.id, req.varjoResources.db));
 });
 
 module.exports = { router };

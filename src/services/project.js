@@ -1,6 +1,9 @@
 const { mongoHexIdToObjectId, ResourceNotFoundError } = require("../utils");
+const { mapMongoAllocationToDomainModel } = require("./allocation");
 
-const collection = "projects";
+const projectCollection = "projects";
+const allocationCollection = "allocations"
+const userCollection = "users";
 
 const mapMongoProjectToDomainModel = (mongoProject) => {
 
@@ -23,6 +26,20 @@ const mapMongoProjectToDomainModel = (mongoProject) => {
     return project;
 };
 
+const mapMongoProjectAllocationToDomainModel = (mongoAllocation, mongoUser) => {
+    const allocation = mapMongoAllocationToDomainModel(mongoAllocation);
+
+    allocation.projectId = undefined;
+    allocation.userId = undefined;
+
+    allocation.user = {
+        id: mongoUser._id,
+        name: mongoUser.name
+    };
+
+    return allocation;
+};
+
 const replaceMongoProject = (mongoProject, project) => {
     // TODO: implement
     mongoProject.name = project.name;
@@ -35,19 +52,17 @@ const updateMongoProject = (mongoProject, project) => {
 
 const getProjects = async (db) => {
     // TODO: pagination
-    const mongoProjects = db.collection(collection).find({});
-
-    const projects = [];
-
-    await mongoProjects.forEach((mongoProject) => {
-        projects.push(mapMongoProjectToDomainModel(mongoProject));
-    });
-
-    return projects;
+    return db
+            .collection(projectCollection)
+            .find({})
+            .map(mongoProject => {
+                return mapMongoProjectToDomainModel(mongoProject);
+            })
+            .toArray();
 };
 
 const getProject = async (id, db) => {
-    const mongoProject = await db.collection(collection).findOne({ _id: mongoHexIdToObjectId(id) });
+    const mongoProject = await db.collection(projectCollection).findOne({ _id: mongoHexIdToObjectId(id) });
 
     if (!mongoProject) {
         throw new ResourceNotFoundError(id, "Project");
@@ -58,14 +73,14 @@ const getProject = async (id, db) => {
 
 
 const createProject = async (data, db) => {
-    const response = await db.collection(collection).insertOne(data);
+    const response = await db.collection(projectCollection).insertOne(data);
 
     return { id: response.insertedId }
 };
 
 // TODO
 const updateProject = async (data, replace, db) => {
-    const resp = await db.collection(collection).findOne({ _id: id });
+    const resp = await db.collection(projectCollection).findOne({ _id: id });
 
     if (!mongoProject) {
         throw new ResourceNotFoundError(data.id, "Project");
@@ -84,7 +99,25 @@ const updateProject = async (data, replace, db) => {
 };
 
 const deleteProject = async (id, db) => {
-    await db.collection(collection).deleteOne({ _id: mongoHexIdToObjectId(id) });
+    await db.collection(projectCollection).deleteOne({ _id: mongoHexIdToObjectId(id) });
+};
+
+const getProjectAllocations = async (id, db) => {
+    const mongoAllocations = db.collection(allocationCollection).find({ projectId: id });
+
+    const allocations = [];
+
+    for await ( const mongoAllocation of mongoAllocations ) {
+        const mongoUser = await db.collection(userCollection).findOne({ _id: mongoHexIdToObjectId(mongoAllocation.userId) });
+
+        if (!mongoUser) {
+            throw new ResourceNotFoundError(mongoAllocation.userId, "User");
+        }
+
+        allocations.push(mapMongoProjectAllocationToDomainModel(mongoAllocation, mongoUser));
+    }
+
+    return allocations;
 };
 
 module.exports = {
@@ -93,4 +126,5 @@ module.exports = {
     createProject: createProject,
     updateProject: updateProject,
     deleteProject: deleteProject,
+    getProjectAllocations: getProjectAllocations,
 };

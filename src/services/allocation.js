@@ -7,7 +7,6 @@ const mapMongoAllocationToDomainModel = (mongoAllocation) => {
     const allocation = {
         id: mongoAllocation._id,
         allocation: mongoAllocation.allocation,
-        name: mongoAllocation.name,
         description: mongoAllocation.description,
         userId: mongoAllocation.userId,
         projectId: mongoAllocation.projectId,
@@ -96,4 +95,5 @@ module.exports = {
     createAllocation: createAllocation,
     updateAllocation: updateAllocation,
     deleteAllocation: deleteAllocation,
+    mapMongoAllocationToDomainModel,
 };

@@ -3,7 +3,12 @@ const express = require("express");
 const router = addAsync(express.Router());
 
 const { newProject, existingProject } = require("../validation/project");
-const { getProjects, getProject, createProject, updateProject, deleteProject } = require("../services/project");
+const { getProjects,
+        getProject,
+        createProject,
+        updateProject,
+        deleteProject,
+        getProjectAllocations } = require("../services/project");
 
 /*
  * Sample response:
@@ -141,6 +146,11 @@ router.putAsync("/:id", async (req, res) => {
 router.deleteAsync("/:id", async (req, res) => {
     await deleteProject(req.params.id, req.varjoResources.db);
     res.status(204).send();
+});
+
+// TODO description
+router.getAsync("/:id/allocations", async (req, res) => {
+    return res.json(await getProjectAllocations(req.params.id, req.varjoResources.db));
 });
 
 module.exports = { router };
