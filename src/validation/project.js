@@ -7,7 +7,7 @@ const tagSchema = Joi.object().keys({
     value: Joi.string().required(),
 });
 
-const projectBaseSchema = Joi.object().keys({
+const projectSchema = Joi.object().keys({
     name: Joi.string().required(),
     description: Joi.string(),
     start: Joi.date().format('YYYY-MM-DD'),
@@ -15,12 +15,7 @@ const projectBaseSchema = Joi.object().keys({
     tags: Joi.array().items(tagSchema),
 });
 
-const existingProjectSchema = projectBaseSchema.keys({
-    id: Joi.string().required(),
-});
-
 module.exports = {
     tag: tagSchema,
-    newProject: projectBaseSchema,
-    existingProject: existingProjectSchema,
+    project: projectSchema,
 }

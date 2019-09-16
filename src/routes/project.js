@@ -2,7 +2,7 @@ const { addAsync } = require("@awaitjs/express");
 const express = require("express");
 const router = addAsync(express.Router());
 
-const { newProject, existingProject } = require("../validation/project");
+const { project } = require("../validation/project");
 const { getProjects,
         getProject,
         createProject,
@@ -61,9 +61,9 @@ router.getAsync("/", async (req, res) => {
  * Returns 200, with content.
  */
 router.postAsync("/", async (req, res) => {
-    const { error } = await newProject.validate(req.body);
+    const { error } = await project.validate(req.body);
 
-    if (error) {
+    if ( error ) {
         throw error;
     }
 
@@ -97,23 +97,6 @@ router.getAsync("/:id", async (req, res) => {
  * Sample request:
  *
  * {
- *   "id": "string",
- *   "name": "string",
- *   "description": "string",
- *   "start": "date",
- *   "end": "date",
- *   "tags": [
- *     {
- *       "key": "string",
- *       "value": "string"
- *     }
- *   ]
- * }
- * 
- *  Sample response:
- * 
- * {
- *   "id": "string",
  *   "name": "string",
  *   "description": "string",
  *   "start": "date",
@@ -130,14 +113,13 @@ router.getAsync("/:id", async (req, res) => {
  */
 // TODO
 router.putAsync("/:id", async (req, res) => {
-    const { error } = await existingProject.validate(req.body);
+    const { error } = await project.validate(req.body);
 
-    if (error || (reg.params.id != req.body.id)) {
-        // TODO error?
+    if ( error ) {
         throw error;
     }
 
-    return res.status(204).json(await updateProject(req.body, true, req.varjoResources.db));
+    return res.status(204).json(await updateProject(req.params.id, req.body, req.varjoResources.db));
 });
 
 /*

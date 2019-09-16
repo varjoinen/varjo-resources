@@ -25,16 +25,6 @@ const mapMongoAllocationToDomainModel = (mongoAllocation) => {
     return allocation;
 };
 
-const replaceMongoAllocation = (mongoAllocation, allocation) => {
-    // TODO: implement
-    mongoAllocation.name = allocation.name;
-};
-
-const updateMongoAllocation = (mongoAllocation, allocation) => {
-    // TODO: update
-    mongoAllocation.name = allocation.name;
-};
-
 const getAllocations = async (db) => {
     // TODO: pagination
     const mongoAllocations = db.collection(collection).find({});
@@ -65,24 +55,16 @@ const createAllocation = async (data, db) => {
     return { id: response.insertedId }
 };
 
-// TODO
-const updateAllocation = async (data, replace, db) => {
-    const resp = await db.collection(collection).findOne({ _id: id });
+const updateAllocation = async (id, data, db) => {
+    const query = { _id: mongoHexIdToObjectId(id) }
+
+    const mongoAllocation = await db.collection(collection).findOne(query);
 
     if (!mongoAllocation) {
         throw new ResourceNotFoundError(data.id, "Allocation");
     }
 
-    let updatedAllocation;
-    if (replace) {
-        updatedAllocation = replaceMongoAllocation(mongoAllocation, data);
-    } else {
-        updatedAllocation = updateMongoAllocation(mongoAllocation, data);
-    }
-
-    await updatedAllocation.save();
-
-    return mapMongoAllocationToDomainModel(updatedAllocation);
+    await db.collection(collection).updateOne(query, { $set: data });
 };
 
 const deleteAllocation = async (id, db) => {

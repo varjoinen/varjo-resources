@@ -7,7 +7,7 @@ const tagSchema = Joi.object().keys({
     value: Joi.string().required(),
 });
 
-const allocationBaseSchema = Joi.object().keys({
+const allocationSchema = Joi.object().keys({
     allocation: Joi.number().required(),
     description: Joi.string(),
     allocationId: Joi.string(),
@@ -18,12 +18,7 @@ const allocationBaseSchema = Joi.object().keys({
     tags: Joi.array().items(tagSchema),
 });
 
-const existingAllocationSchema = allocationBaseSchema.keys({
-    id: Joi.string().required(),
-});
-
 module.exports = {
     tag: tagSchema,
-    newAllocation: allocationBaseSchema,
-    existingAllocation: existingAllocationSchema,
+    allocation: allocationSchema,
 }

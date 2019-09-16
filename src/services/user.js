@@ -37,16 +37,6 @@ const mapMongoUserAllocationToDomainModel = (mongoAllocation, mongoProject) => {
     return allocation;
 };
 
-const replaceMongoUser = (mongoUser, user) => {
-    // TODO: implement
-    mongoUser.name = user.name;
-};
-
-const updateMongoUser = (mongoUser, user) => {
-    // TODO: update
-    mongoUser.name = user.name;
-};
-
 const getUsers = async (db) => {
     // TODO: pagination
     const mongoUsers = db.collection(userCollection).find({});
@@ -77,24 +67,16 @@ const createUser = async (data, db) => {
     return { id: response.insertedId }
 };
 
-// TODO
-const updateUser = async (data, replace, db) => {
-    const resp = await db.collection(userCollection).findOne({ _id: id });
+const updateUser = async (id, data, db) => {
+    const query = { _id: mongoHexIdToObjectId(id) }
+
+    const mongoUser = await db.collection(userCollection).findOne(query);
 
     if (!mongoUser) {
         throw new ResourceNotFoundError(data.id, "User");
     }
 
-    let updatedUser;
-    if (replace) {
-        updatedUser = replaceMongoUser(mongoUser, data);
-    } else {
-        updatedUser = updateMongoUser(mongoUser, data);
-    }
-
-    await updatedUser.save();
-
-    return mapMongoUserToDomainModel(updatedUser);
+    await db.collection(userCollection).updateOne(query, { $set: data });
 };
 
 const deleteUser = async (id, db) => {

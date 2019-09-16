@@ -2,7 +2,7 @@ const { addAsync } = require("@awaitjs/express");
 const express = require("express");
 const router = addAsync(express.Router());
 
-const { newAllocation, existingAllocation } = require("../validation/allocation");
+const { allocation } = require("../validation/allocation");
 const { getAllocations, getAllocation, createAllocation, updateAllocation, deleteAllocation } = require("../services/allocation");
 
 /*
@@ -57,7 +57,7 @@ router.getAsync("/", async (req, res) => {
  * Returns 200, with content.
  */
 router.postAsync("/", async (req, res) => {
-    const { error } = await newAllocation.validate(req.body);
+    const { error } = await allocation.validate(req.body);
 
     if (error) {
         throw error;
@@ -94,7 +94,6 @@ router.getAsync("/:id", async (req, res) => {
  * Sample request:
  *
  * {
- *   "id": "string",
  *   "allocation": "number",
  *   "allocationId": "string",
  *   "userId": "string",
@@ -107,37 +106,17 @@ router.getAsync("/:id", async (req, res) => {
  *     }
  *   ]
  * }
- * 
- *  Sample response:
- * 
- * {
- *   "id": "string",
- *   "allocation": "number",
- *   "allocationId": "string",
- *   "userId": "string",
- *   "start": "date",
- *   "end": "date",
- *   "tags": [
- *     {
- *       "key": "string",
- *       "value": "string"
- *     }
- *   ]
- * }
- * 
  * 
  * Returns 204, no content.
  */
-// TODO
 router.putAsync("/:id", async (req, res) => {
-    const { error } = await existingAllocation.validate(req.body);
+    const { error } = await allocation.validate(req.body);
 
-    if (error || (reg.params.id != req.body.id)) {
-        // TODO error?
+    if ( error ) {
         throw error;
     }
 
-    return res.status(204).json(await updateAllocation(req.body, true, req.varjoResources.db));
+    return res.status(204).json(await updateAllocation(req.params.id, req.body, req.varjoResources.db));
 });
 
 /*

@@ -40,16 +40,6 @@ const mapMongoProjectAllocationToDomainModel = (mongoAllocation, mongoUser) => {
     return allocation;
 };
 
-const replaceMongoProject = (mongoProject, project) => {
-    // TODO: implement
-    mongoProject.name = project.name;
-};
-
-const updateMongoProject = (mongoProject, project) => {
-    // TODO: update
-    mongoProject.name = project.name;
-};
-
 const getProjects = async (db) => {
     // TODO: pagination
     return db
@@ -78,24 +68,16 @@ const createProject = async (data, db) => {
     return { id: response.insertedId }
 };
 
-// TODO
-const updateProject = async (data, replace, db) => {
-    const resp = await db.collection(projectCollection).findOne({ _id: id });
+const updateProject = async (id, data, db) => {
+    const query = { _id: mongoHexIdToObjectId(id) }
+
+    const mongoProject = await db.collection(projectCollection).findOne(query);
 
     if (!mongoProject) {
         throw new ResourceNotFoundError(data.id, "Project");
     }
 
-    let updatedProject;
-    if (replace) {
-        updatedProject = replaceMongoProject(mongoProject, data);
-    } else {
-        updatedProject = updateMongoProject(mongoProject, data);
-    }
-
-    await updatedProject.save();
-
-    return mapMongoProjectToDomainModel(updatedProject);
+    await db.collection(projectCollection).updateOne(query, { $set: data });
 };
 
 const deleteProject = async (id, db) => {

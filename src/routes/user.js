@@ -2,7 +2,7 @@ const { addAsync } = require("@awaitjs/express");
 const express = require("express");
 const router = addAsync(express.Router());
 
-const { newUser, existingUser } = require("../validation/user");
+const { user } = require("../validation/user");
 const { getUsers,
         getUser,
         createUser,
@@ -55,7 +55,7 @@ router.getAsync("/", async (req, res) => {
  * Returns 200, with content.
  */
 router.postAsync("/", async (req, res) => {
-    const { error } = await newUser.validate(req.body);
+    const { error } = await user.validate(req.body);
 
     if (error) {
         throw error;
@@ -98,31 +98,16 @@ router.getAsync("/:id", async (req, res) => {
  *   ]
  * }
  * 
- *  Sample response:
- * 
- * {
- *   "id": "string",
- *   "name": "string",
- *   "tags": [
- *     {
- *       "key": "string",
- *       "value": "string"
- *     }
- *   ]
- * }
- * 
  * Returns 204, no content.
  */
-// TODO
 router.putAsync("/:id", async (req, res) => {
-    const { error } = await existingUser.validate(req.body);
+    const { error } = await user.validate(req.body);
 
-    if (error || (reg.params.id != req.body.id)) {
-        // TODO error?
+    if ( error ) {
         throw error;
     }
 
-    return res.status(204).json(await updateUser(req.body, true, req.varjoResources.db));
+    return res.status(204).json(await updateUser(req.params.id, req.body, req.varjoResources.db));
 });
 
 /*
