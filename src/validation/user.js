@@ -1,16 +1,11 @@
 const Joi = require("@hapi/joi");
-
-const tagSchema = Joi.object().keys({
-    key: Joi.string().required(),
-    value: Joi.string().required(),
-});
+const { tag } = require("./common");
 
 const userSchema = Joi.object().keys({
     name: Joi.string().required(),
-    tags: Joi.array().items(tagSchema),
+    tags: Joi.array().items(tag),
 });
 
 module.exports = {
-    tag: tagSchema,
     user: userSchema,
 }
