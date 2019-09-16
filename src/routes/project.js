@@ -130,7 +130,29 @@ router.deleteAsync("/:id", async (req, res) => {
     res.status(204).send();
 });
 
-// TODO description
+/*
+ *  Sample response:
+ * 
+ * [{
+ *   "id": "string",
+ *   "allocation": number,
+ *   "description": "string",
+ *   "start": "YYYY-MM-DD",
+ *   "end": "YYYY-MM-DD",
+ *   "tags": [
+ *     {
+ *       "key": "string",
+ *       "value": "string"
+ *     }
+ *   ],
+ *   "user": {
+ *     "id": "string",
+ *     "name": "string"
+ *   }
+ * }]
+ * 
+ * Returns 200, with content.
+ */
 router.getAsync("/:id/allocations", async (req, res) => {
     return res.json(await getProjectAllocations(req.params.id, req.varjoResources.db));
 });
