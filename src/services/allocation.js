@@ -72,7 +72,15 @@ const updateAllocation = async (id, data, db) => {
 };
 
 const deleteAllocation = async (id, db) => {
-    await deleteOne(db, allocationCollection, { _id: mongoHexIdToObjectId(id) });
+    const query = { _id: mongoHexIdToObjectId(id) }
+
+    const mongoAllocation = await findOne(db, allocationCollection, query);
+
+    if (!mongoAllocation) {
+        throw new ResourceNotFoundError(id, "Project");
+    }
+
+    await deleteOne(db, allocationCollection, query);
 };
 
 module.exports = {

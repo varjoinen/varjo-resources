@@ -85,7 +85,15 @@ const updateProject = async (id, data, db) => {
 };
 
 const deleteProject = async (id, db) => {
-    await deleteOne(db, projectCollection, { _id: mongoHexIdToObjectId(id) });
+    const query = { _id: mongoHexIdToObjectId(id) }
+
+    const mongoProject = await findOne(db, projectCollection, query);
+
+    if (!mongoProject) {
+        throw new ResourceNotFoundError(id, "Project");
+    }
+
+    await deleteOne(db, projectCollection, query);
 };
 
 const getProjectAllocations = async (id, db) => {
@@ -113,4 +121,6 @@ module.exports = {
     updateProject: updateProject,
     deleteProject: deleteProject,
     getProjectAllocations: getProjectAllocations,
+    mapMongoProjectToDomainModel: mapMongoProjectToDomainModel,
+    mapMongoProjectAllocationToDomainModel: mapMongoProjectAllocationToDomainModel,
 };

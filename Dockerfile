@@ -26,7 +26,7 @@ RUN apk add --no-cache bash
 
 COPY . .
 RUN npm run lint                         && \
-    npm run test
+    npm run tests-with-coverage
 
 #
 # --- Release ---
