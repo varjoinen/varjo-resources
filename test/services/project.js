@@ -223,6 +223,64 @@ describe("services/project", () => {
             
             assert.deepEqual(output, expected);
         });
+
+        it("should work with tag filter", async () => {
+            const dbProjects = [
+                {
+                    _id: "6d847b7679c4a60011d45f26",
+                    name: "Project 1",
+                    description: "Description",
+                    start: "2019-01-01",
+                    end: "2019-01-01",
+                    tags: [
+                        {
+                            key: "key 1",
+                            value: "value 1"
+                        }
+                    ],
+                },
+                {
+                    _id: "7d847b7679c4a60011d45f25",
+                    name: "Project 2",
+                    description: "Description",
+                    start: "2019-01-01",
+                    end: "2019-01-01",
+                    tags: [
+                        {
+                            key: "key 2",
+                            value: "value 2"
+                        }
+                    ],
+                }
+            ];
+
+            const mockDb = {
+                collection: (coll) => {
+                    return {
+                        find: (query) => {
+                            return [
+                                dbProjects[1],
+                            ];
+                        },
+                    };
+                },
+            };
+
+            const expected = [
+                {
+                    id: dbProjects[1]._id,
+                    name: dbProjects[1].name,
+                    description: dbProjects[1].description,
+                    start: dbProjects[1].start,
+                    end: dbProjects[1].end,
+                    tags: dbProjects[1].tags,
+                },
+            ]
+            
+            const output = await getProjects(mockDb, { key: "key 2", value: "value 2" });
+            
+            assert.deepEqual(output, expected);
+        });
     });
 
     describe("getProject", () => {

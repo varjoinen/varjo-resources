@@ -205,6 +205,55 @@ describe("services/user", () => {
             
             assert.deepEqual(output, expected);
         });
+
+        it("should work with tag filter", async () => {
+            const dbUsers = [
+                {
+                    _id: "6d847b7679c4a60011d45f26",
+                    name: "User 1",
+                    tags: [
+                        {
+                            key: "key 1",
+                            value: "value 1"
+                        }
+                    ],
+                },
+                {
+                    _id: "7d847b7679c4a60011d45f25",
+                    name: "User 2",
+                    tags: [
+                        {
+                            key: "key 2",
+                            value: "value 2"
+                        }
+                    ],
+                }
+            ];
+
+            const mockDb = {
+                collection: (coll) => {
+                    return {
+                        find: (query) => {
+                            return [
+                                dbUsers[1],
+                            ];
+                        },
+                    };
+                },
+            };
+
+            const expected = [
+                {
+                    id: dbUsers[1]._id,
+                    name: dbUsers[1].name,
+                    tags: dbUsers[1].tags,
+                },
+            ]
+            
+            const output = await getUsers(mockDb, { key: "key 2", value: "value 2" });
+            
+            assert.deepEqual(output, expected);
+        });
     });
 
     describe("getUser", () => {

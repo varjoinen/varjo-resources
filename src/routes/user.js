@@ -30,7 +30,15 @@ const { getUsers,
  * Returns 200, with content.
  */
 router.getAsync("/", async (req, res) => {
-    return res.json(await getUsers(req.varjoResources.db));
+    let tagFilter = undefined;
+    if ( req.query.tagKey && req.query.tagValue ) {
+        tagFilter = {
+            key: req.query.tagKey,
+            value: req.query.tagValue,
+        };
+    }
+
+    return res.json(await getUsers(req.varjoResources.db, tagFilter));
 });
 
 /*

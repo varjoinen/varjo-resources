@@ -29,9 +29,17 @@ const mapMongoAllocationToDomainModel = (mongoAllocation) => {
     return allocation;
 };
 
-const getAllocations = async (db) => {
+const getAllocations = async (db, tagFilter) => {
+    let query = {}
+
+    if ( tagFilter ) {
+        query = {
+            tags: tagFilter,
+        }
+    }
+
     // TODO: pagination
-    const mongoAllocations = await find(db, allocationCollection, {});
+    const mongoAllocations = await find(db, allocationCollection, query);
 
     const allocations = [];
 

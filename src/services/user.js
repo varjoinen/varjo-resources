@@ -39,9 +39,17 @@ const mapMongoUserAllocationToDomainModel = (mongoAllocation, mongoProject) => {
     return allocation;
 };
 
-const getUsers = async (db) => {
+const getUsers = async (db, tagFilter) => {
+    let query = {}
+
+    if ( tagFilter ) {
+        query = {
+            tags: tagFilter,
+        }
+    }
+
     // TODO: pagination
-    const mongoUsers = await find(db, userCollection, {});
+    const mongoUsers = await find(db, userCollection, query);
 
     const users = [];
 

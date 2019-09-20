@@ -160,6 +160,70 @@ describe("services/allocation", () => {
             
             assert.deepEqual(output, expected);
         });
+
+        it("should work with tag filter", async () => {
+            const dbAllocations = [
+                {
+                    _id: "6d847b7679c4a60011d45f26",
+                    allocation: 10,
+                    description: "Description",
+                    projectId: "7d847b7679c4a60011d45f25",
+                    userId: "8d847b7679c4a60011d45f24",
+                    start: "2019-01-01",
+                    end: "2019-01-01",
+                    tags: [
+                        {
+                            key: "key 1",
+                            value: "value 1"
+                        }
+                    ],
+                },
+                {
+                    _id: "7d847b7679c4a60011d45f25",
+                    allocation: 10,
+                    description: "Description",
+                    projectId: "7d847b7679c4a60011d45f25",
+                    userId: "8d847b7679c4a60011d45f24",
+                    start: "2019-01-01",
+                    end: "2019-01-01",
+                    tags: [
+                        {
+                            key: "key 2",
+                            value: "value 2"
+                        }
+                    ],
+                }
+            ];
+
+            const mockDb = {
+                collection: (coll) => {
+                    return {
+                        find: (query) => {
+                            return [
+                                dbAllocations[1],
+                            ];
+                        },
+                    };
+                },
+            };
+
+            const expected = [
+                {
+                    id: dbAllocations[1]._id,
+                    allocation: dbAllocations[1].allocation,
+                    description: dbAllocations[1].description,
+                    projectId: dbAllocations[1].projectId,
+                    userId: dbAllocations[1].userId,
+                    start: dbAllocations[1].start,
+                    end: dbAllocations[1].end,
+                    tags: dbAllocations[1].tags,
+                },
+            ]
+            
+            const output = await getAllocations(mockDb, { key: "key 2", value: "value 2" });
+            
+            assert.deepEqual(output, expected);
+        });
     });
 
     describe("getAllocation", () => {
