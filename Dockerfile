@@ -22,6 +22,8 @@ RUN npm set progress=false               && \
 #
 FROM deps AS test
 
+RUN apk add --no-cache bash
+
 COPY . .
 RUN npm run lint                         && \
     npm run test

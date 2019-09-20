@@ -1,9 +1,9 @@
 const { mongoHexIdToObjectId, ResourceNotFoundError } = require("../utils");
 const { mapMongoAllocationToDomainModel } = require("./allocation");
 
-const userCollection = "users";
-const allocationCollection = "allocations";
-const projectCollection = "projects";
+const { find, findOne, insertOne, deleteOne, updateOne } = require("../db");
+
+const { userCollection, allocationCollection, projectCollection } = require("../constants");
 
 const mapMongoUserToDomainModel = (mongoUser) => {
 
@@ -12,13 +12,15 @@ const mapMongoUserToDomainModel = (mongoUser) => {
         name: mongoUser.name,
     };
 
-    const tags = [];
+    if ("tags" in mongoUser) {
+        const tags = [];
 
-    for (let tag of mongoUser.tags) {
-        tags.push({"key": tag.key, "value": tag.value});
+        for (let tag of mongoUser.tags) {
+            tags.push({"key": tag.key, "value": tag.value});
+        }
+
+        user.tags = tags;
     }
-
-    user.tags = tags;
 
     return user;
 };
@@ -39,7 +41,7 @@ const mapMongoUserAllocationToDomainModel = (mongoAllocation, mongoProject) => {
 
 const getUsers = async (db) => {
     // TODO: pagination
-    const mongoUsers = db.collection(userCollection).find({});
+    const mongoUsers = await find(db, userCollection, {});
 
     const users = [];
 
@@ -51,7 +53,7 @@ const getUsers = async (db) => {
 };
 
 const getUser = async (id, db) => {
-    const mongoUser = await db.collection(userCollection).findOne({ _id: mongoHexIdToObjectId(id) });
+    const mongoUser = await findOne(db, userCollection, { _id: mongoHexIdToObjectId(id) });
 
     if (!mongoUser) {
         throw new ResourceNotFoundError(id, "User");
@@ -62,7 +64,7 @@ const getUser = async (id, db) => {
 
 
 const createUser = async (data, db) => {
-    const response = await db.collection(userCollection).insertOne(data);
+    const response = await insertOne(db, userCollection, data);
 
     return { id: response.insertedId }
 };
@@ -70,26 +72,34 @@ const createUser = async (data, db) => {
 const updateUser = async (id, data, db) => {
     const query = { _id: mongoHexIdToObjectId(id) }
 
-    const mongoUser = await db.collection(userCollection).findOne(query);
+    const mongoUser = await findOne(db, userCollection, query);
 
     if (!mongoUser) {
         throw new ResourceNotFoundError(data.id, "User");
     }
 
-    await db.collection(userCollection).updateOne(query, { $set: data });
+    await updateOne(db, userCollection, query, data);
 };
 
 const deleteUser = async (id, db) => {
-    await db.collection(userCollection).deleteOne({ _id: mongoHexIdToObjectId(id) });
+    const query = { _id: mongoHexIdToObjectId(id) }
+
+    const mongoUser = await findOne(db, userCollection, query);
+
+    if (!mongoUser) {
+        throw new ResourceNotFoundError(id, "User");
+    }
+
+    await deleteOne(db, userCollection, query);
 };
 
 const getUserAllocations = async (id, db) => {
-    const mongoAllocations = db.collection(allocationCollection).find({ userId: id });
+    const mongoAllocations = await find(db, allocationCollection, { userId: id });
 
     const allocations = [];
 
     for await ( const mongoAllocation of mongoAllocations ) {
-        const mongoProject = await db.collection(projectCollection).findOne({ _id: mongoHexIdToObjectId(mongoAllocation.projectId) });
+        const mongoProject = await findOne(db, projectCollection, { _id: mongoHexIdToObjectId(mongoAllocation.projectId) });
 
         if (!mongoProject) {
             throw new ResourceNotFoundError(mongoAllocation.projectId, "Project");
@@ -108,4 +118,6 @@ module.exports = {
     updateUser: updateUser,
     deleteUser: deleteUser,
     getUserAllocations: getUserAllocations,
+    mapMongoUserToDomainModel: mapMongoUserToDomainModel,
+    mapMongoUserAllocationToDomainModel: mapMongoUserAllocationToDomainModel,
 };

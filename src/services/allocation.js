@@ -1,6 +1,8 @@
 const { mongoHexIdToObjectId, ResourceNotFoundError } = require("../utils");
 
-const collection = "allocations";
+const { find, findOne, insertOne, deleteOne, updateOne } = require("../db");
+
+const { allocationCollection } = require("../constants");
 
 const mapMongoAllocationToDomainModel = (mongoAllocation) => {
 
@@ -14,20 +16,22 @@ const mapMongoAllocationToDomainModel = (mongoAllocation) => {
         end: mongoAllocation.end,
     };
 
-    const tags = [];
+    if ("tags" in mongoAllocation) {
+        const tags = [];
 
-    for (let tag of mongoAllocation.tags) {
-        tags.push({"key": tag.key, "value": tag.value});
+        for (let tag of mongoAllocation.tags) {
+            tags.push({"key": tag.key, "value": tag.value});
+        }
+
+        allocation.tags = tags;
     }
-
-    allocation.tags = tags;
 
     return allocation;
 };
 
 const getAllocations = async (db) => {
     // TODO: pagination
-    const mongoAllocations = db.collection(collection).find({});
+    const mongoAllocations = await find(db, allocationCollection, {});
 
     const allocations = [];
 
@@ -39,7 +43,7 @@ const getAllocations = async (db) => {
 };
 
 const getAllocation = async (id, db) => {
-    const mongoAllocation = await db.collection(collection).findOne({ _id: mongoHexIdToObjectId(id) });
+    const mongoAllocation = await findOne(db, allocationCollection, { _id: mongoHexIdToObjectId(id) });
 
     if (!mongoAllocation) {
         throw new ResourceNotFoundError(id, "Allocation");
@@ -50,7 +54,7 @@ const getAllocation = async (id, db) => {
 
 
 const createAllocation = async (data, db) => {
-    const response = await db.collection(collection).insertOne(data);
+    const response = await insertOne(db, allocationCollection, data);
 
     return { id: response.insertedId }
 };
@@ -58,17 +62,17 @@ const createAllocation = async (data, db) => {
 const updateAllocation = async (id, data, db) => {
     const query = { _id: mongoHexIdToObjectId(id) }
 
-    const mongoAllocation = await db.collection(collection).findOne(query);
+    const mongoAllocation = await findOne(db, allocationCollection, query);
 
     if (!mongoAllocation) {
         throw new ResourceNotFoundError(data.id, "Allocation");
     }
 
-    await db.collection(collection).updateOne(query, { $set: data });
+    await updateOne(db, allocationCollection, query, data);
 };
 
 const deleteAllocation = async (id, db) => {
-    await db.collection(collection).deleteOne({ _id: mongoHexIdToObjectId(id) });
+    await deleteOne(db, allocationCollection, { _id: mongoHexIdToObjectId(id) });
 };
 
 module.exports = {

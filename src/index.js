@@ -21,7 +21,7 @@
         app.use(responseTime());
 
         // --- Database
-        const db = await dbUtils.connect(config.mongodb, logger);
+        const db = await dbUtils.connect(config.mongodb);
         const dbMiddleware = function (req, _, next) {
             req.varjoResources = req.varjoResources || {};
             req.varjoResources.db = db;

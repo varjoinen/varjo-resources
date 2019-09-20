@@ -59,7 +59,7 @@ router.getAsync("/", async (req, res) => {
 router.postAsync("/", async (req, res) => {
     const { error } = await allocation.validate(req.body);
 
-    if (error) {
+    if ( error ) {
         throw error;
     }
 

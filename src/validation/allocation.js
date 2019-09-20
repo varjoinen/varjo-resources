@@ -6,7 +6,6 @@ const { tag } = require("./common");
 const allocationSchema = Joi.object().keys({
     allocation: Joi.number().required(),
     description: Joi.string(),
-    allocationId: Joi.string(),
     userId: Joi.string(),
     projectId: Joi.string(),
     start: Joi.date().format('YYYY-MM-DD'),
