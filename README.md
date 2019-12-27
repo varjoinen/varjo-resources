@@ -22,4 +22,4 @@ Run `npm run build`
 
 ## Development
 
-Run `npm run containers-start` to start a devleopment environment, API starts at port 3000 by default.
+Run `npm run containers-start` to start a development environment, API starts at port 3000 by default.
